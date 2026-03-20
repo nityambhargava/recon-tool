@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ReconTool — Payment Reconciliation Dashboard
 
 A web app that takes a **Forward & Return Payment Reconciliation** CSV/Excel report
@@ -83,3 +84,6 @@ recon-tool/
     └── js/
         └── upload.js        ← drag-drop, file preview
 ```
+=======
+# recon-tool
+>>>>>>> 2a800265e75e7d282c2b70e937b0ec8cb2c92b35
