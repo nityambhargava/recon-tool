@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Recon Tool — Upload</title>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/upload.css"/>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<div class="page">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <span class="nav-icon"></span>
+      <span class="nav-name">ReconTool</span>
+    </div>
+    <div class="nav-links">
+      <span class="nav-tag">Beta</span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Payment Reconciliation Dashboard</div>
+    <h1 class="hero-title">
+      Drop your report.<br/>
+      <span class="hero-accent">Get clarity instantly.</span>
+    </h1>
+    <p class="hero-sub">
+      Upload your Forward &amp; Return Payment Reconciliation file and get a full
+      breakdown of disputed, overdue, awaiting and reconciled payments — split by
+      channel and journey.
+    </p>
+  </div>
+
+  <!-- UPLOAD CARD -->
+  <div class="upload-wrap">
+    <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+
+      {% if error %}
+      <div class="error-banner">
+        <span class="error-icon">!</span>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-inner">
+          <div class="drop-icon-wrap">
+            <svg class="drop-icon" viewBox="0 0 48 48" fill="none">
+              <rect x="6" y="8" width="36" height="32" rx="4" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 8V6a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="2"/>
+              <path d="M24 20v12M18 26l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="drop-title" id="dropTitle">Drag &amp; drop your file here</div>
+          <div class="drop-sub">or click to browse</div>
+          <div class="drop-formats">CSV · XLSX · XLS</div>
+        </div>
+        <input type="file" name="file" id="fileInput" accept=".csv,.xlsx,.xls" required/>
+      </div>
+
+      <div class="file-preview" id="filePreview" style="display:none">
+        <div class="file-preview-inner">
+          <span class="file-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+              <path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M12 2v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="file-name" id="fileName">—</span>
+          <span class="file-size" id="fileSize">—</span>
+          <button type="button" class="file-clear" id="fileClear" title="Remove">&#x2715;</button>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn" disabled>
+        <span class="submit-text">Analyse Report</span>
+        <span class="submit-arrow">→</span>
+      </button>
+
+    </form>
+  </div>
+
+  <!-- FEATURE CHIPS -->
+  <div class="features">
+    <div class="feat">
+      <span class="feat-dot" style="background:#f5a623"></span>
+      Forward &amp; Return journeys
+    </div>
+    <div class="feat">
+      <span class="feat-dot" style="background:#e84545"></span>
+      Disputed · Overdue alerts
+    </div>
+    <div class="feat">
+      <span class="feat-dot" style="background:#23c97a"></span>
+      Channel-wise breakdown
+    </div>
+    <div class="feat">
+      <span class="feat-dot" style="background:#4d72ff"></span>
+      Overpaid · Underpaid split
+    </div>
+  </div>
+
+</div>
+
+<script src="/static/js/upload.js"></script>
+</body>
+</html>

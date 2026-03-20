@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Recon Dashboard — {{ active_channel }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/dashboard.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <a href="/" class="brand">
+      <span class="brand-icon"></span>
+      <span class="brand-name">ReconTool</span>
+    </a>
+    <div class="hdr-meta">
+      <span class="hdr-file">{{ filename }}</span>
+      <span class="hdr-sep">·</span>
+      <span class="hdr-dates">{{ data.dateMin }} → {{ data.dateMax }}</span>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <button class="download-btn" id="downloadBtn" onclick="downloadDashboard()">
+      <span>&#8595;</span> Download PNG
+    </button>
+    <a href="/" class="reload-btn">↑ Upload new file</a>
+  </div>
+</div>
+
+<!-- CHANNEL BAR -->
+<div class="ch-bar">
+  <span class="ch-label">Channel</span>
+  <div class="ch-select-wrap">
+    <select class="ch-select" id="chSelect">
+      {% for ch, chdata in data.channels.items() %}
+      <option value="{{ ch }}"
+        {% if ch == active_channel %}selected{% endif %}
+        {% if chdata.totalOrders == 0 and ch != 'All Channels' %}disabled{% endif %}>
+        {{ ch }}{% if chdata.totalOrders > 0 %} — {{ '{:,}'.format(chdata.totalOrders) }} orders{% else %} — no data{% endif %}
+      </option>
+      {% endfor %}
+    </select>
+    <span class="ch-arrow">▾</span>
+  </div>
+  {% set cd = data.channels[active_channel] %}
+  <div class="ch-pill">
+    {% if cd.totalOrders > 0 %}
+    <b>{{ '{:,}'.format(cd.totalOrders) }}</b> total &nbsp;·&nbsp;
+    <b>{{ '{:,}'.format(cd.trackedTotal) }}</b> tracked
+    {% else %}No data{% endif %}
+  </div>
+</div>
+
+<!-- MAIN -->
+{% set cd = data.channels[active_channel] %}
+<div class="main">
+
+{% if cd.totalOrders == 0 %}
+<div class="empty">
+  <div class="empty-icon">○</div>
+  <div class="empty-title">No data for {{ active_channel }}</div>
+  <div class="empty-sub">Upload a report containing {{ active_channel }} orders to see a breakdown.</div>
+</div>
+
+{% else %}
+
+<!-- ACTIONABLES -->
+<section>
+  <div class="sec-label">Actionables <span class="sec-note">flagged if disputed or overdue &gt; 25%</span></div>
+  <div class="act-grid">
+    {% for item in actionables %}
+    <div class="act-card {{ item.type }}">
+      <span class="act-icon">{{ item.icon }}</span>
+      <div class="act-title">{{ item.title | safe }}</div>
+      <div class="act-body">{{ item.body | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- DISTRIBUTION BAR -->
+{% set ov = cd.overall %}
+<section>
+  <div class="sec-label">Overall distribution <span class="sec-note">{{ '{:,}'.format(cd.trackedTotal) }} tracked orders</span></div>
+  <div class="dist-card">
+    <div class="dist-track">
+      <div class="dist-seg" style="width:{{ ov.Awaiting.pct }}%;background:var(--awaiting)" title="Awaiting {{ ov.Awaiting.pct }}%"></div>
+      <div class="dist-seg" style="width:{{ ov.Disputed.pct }}%;background:var(--disputed)" title="Disputed {{ ov.Disputed.pct }}%"></div>
+      <div class="dist-seg" style="width:{{ ov.Overdue.pct }}%;background:var(--overdue)" title="Overdue {{ ov.Overdue.pct }}%"></div>
+      <div class="dist-seg" style="width:{{ ov.Reconciled.pct }}%;background:var(--reconciled)" title="Reconciled {{ ov.Reconciled.pct }}%"></div>
+    </div>
+    <div class="dist-legend">
+      <div class="leg-item"><span class="leg-dot" style="background:var(--awaiting)"></span>Awaiting <b>{{ ov.Awaiting.pct }}%</b></div>
+      <div class="leg-item"><span class="leg-dot" style="background:var(--disputed)"></span>Disputed <b>{{ ov.Disputed.pct }}%</b></div>
+      <div class="leg-item"><span class="leg-dot" style="background:var(--overdue)"></span>Overdue <b>{{ ov.Overdue.pct }}%</b></div>
+      <div class="leg-item"><span class="leg-dot" style="background:var(--reconciled)"></span>Reconciled <b>{{ ov.Reconciled.pct }}%</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENT JOURNEYS -->
+<section>
+  <div class="sec-label">Payment journeys</div>
+  <div class="journey-grid">
+
+    {% for journey_key, journey_cls, journey_title, journey_sub, journey_icon in [
+      ('forward', 'jp-fwd', 'Forward Payment Journey', 'Return Type = NONE', '→'),
+      ('return',  'jp-ret', 'Return Payment Journey',  'Return Type = CIR / RTO', '←')
+    ] %}
+    {% set jd = cd[journey_key] %}
+    <div class="journey-panel {{ journey_cls }}">
+      <div class="jp-head">
+        <div class="jp-icon">{{ journey_icon }}</div>
+        <div>
+          <div class="jp-title">{{ journey_title }}</div>
+          <div class="jp-sub">{{ journey_sub }}</div>
+        </div>
+      </div>
+      <div class="jp-body">
+        {% for key, cls, label in [
+          ('Awaiting','aw','Awaiting Payment'),
+          ('Disputed','di','Payment Disputed'),
+          ('Overdue','ov','Payment Overdue'),
+          ('Reconciled','re','Reconciled')
+        ] %}
+        {% set s = jd[key] %}
+        <div class="sc {{ cls }}">
+          <div class="sc-top">
+            <div>
+              <div class="sc-name">{{ label }}</div>
+              <div class="sc-amt">&#8377;{{ '{:,.2f}'.format(s.ucSum) }}</div>
+              <div class="sc-cnt">{{ '{:,}'.format(s.count) }} orders</div>
+            </div>
+            <div class="sc-badge">{{ s.pct }}%</div>
+          </div>
+          {% if key == 'Disputed' and s.count > 0 %}
+          <div class="di-extra">
+            <div class="di-box over">
+              <div class="di-lbl">Overpaid</div>
+              <div class="di-val">&#8377;{{ '{:,.2f}'.format(s.overpaid) }}</div>
+            </div>
+            <div class="di-box under">
+              <div class="di-lbl">Underpaid</div>
+              <div class="di-val">&#8377;{{ '{:,.2f}'.format(s.underpaid) }}</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+{% endif %}
+</div>
+
+<div class="footer">
+  ReconTool &nbsp;·&nbsp; {{ data.dateMin }} – {{ data.dateMax }} &nbsp;·&nbsp;
+  Channel: {{ active_channel }} &nbsp;·&nbsp;
+  Forward: Return Type=NONE &nbsp;·&nbsp; Return: Return Type=CIR/RTO
+</div>
+
+<script>
+document.getElementById('chSelect').addEventListener('change', function() {
+  const p = new URLSearchParams(window.location.search);
+  p.set('channel', this.value);
+  window.location.search = p.toString();
+});
+
+function downloadDashboard() {
+  const btn = document.getElementById('downloadBtn');
+  btn.textContent = 'Capturing...';
+  btn.disabled = true;
+
+  const target = document.querySelector('.main');
+  html2canvas(target, {
+    backgroundColor: '#0b0d12',
+    scale: 2,
+    useCORS: true,
+    scrollY: -window.scrollY,
+    windowWidth: document.documentElement.scrollWidth,
+    windowHeight: document.documentElement.scrollHeight,
+  }).then(canvas => {
+    const channel = document.getElementById('chSelect').value.replace(/\s+/g, '_');
+    const date = new Date().toISOString().slice(0,10);
+    const link = document.createElement('a');
+    link.download = `recon_dashboard_${channel}_${date}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.innerHTML = '<span>&#8595;</span> Download PNG';
+    btn.disabled = false;
+  }).catch(() => {
+    btn.innerHTML = '<span>&#8595;</span> Download PNG';
+    btn.disabled = false;
+  });
+}
+</script>
+</body>
+</html>
