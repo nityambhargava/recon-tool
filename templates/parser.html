@@ -36,11 +36,12 @@
   <div class="hero">
     <div class="hero-eyebrow">Parser / Converter</div>
     <h1 class="hero-title">
-      Convert <span class="hero-accent">.txt files</span><br/>to TSV instantly.
+      Merge &amp; convert <span class="hero-accent">.txt files</span><br/>into one TSV.
     </h1>
     <p class="hero-sub">
       Upload multiple <b>.txt</b> files or a single <b>.zip</b> containing them.
-      We'll convert each one to TSV and return a zip you can download.
+      All files are merged into a single <b>.tsv</b> output — header taken from
+      the first file, duplicates stripped.
     </p>
   </div>
 
@@ -84,7 +85,7 @@
           </div>
           <div class="drop-title" id="dropTitle">Drag &amp; drop your files here</div>
           <div class="drop-sub">or click to browse</div>
-          <div class="drop-formats">.TXT files &nbsp;·&nbsp; or a single .ZIP containing .TXT files &nbsp;·&nbsp; output: one merged .TSV</div>
+          <div class="drop-formats">.TXT files &nbsp;·&nbsp; or a single .ZIP containing .TXT files</div>
         </div>
         <input type="file" name="files" id="fileInput" accept=".txt,.zip" multiple required/>
       </div>
@@ -115,7 +116,7 @@
     </div>
     <div class="feat">
       <span class="feat-dot" style="background:#b84fc8"></span>
-      Download as .zip
+      One merged .tsv output
     </div>
   </div>
 
